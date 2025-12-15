@@ -22,8 +22,8 @@ CREATE TABLE articles (
 CREATE TABLE registrations (
     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
 
-    student_type ENUM('NEW','TRANSFER') NOT NULL,
-    gender ENUM('MALE','FEMALE') NOT NULL,
+    student_type ENUM('new','transfer') NOT NULL,
+    gender ENUM('male','female') NOT NULL,
 
     email VARCHAR(100) NOT NULL UNIQUE,
     name VARCHAR(100) NOT NULL,
