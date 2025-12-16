@@ -22,9 +22,9 @@ type Registration struct {
 	StudentType StudentType `gorm:"type:enum('new','transfer');not null" json:"student_type"`
 	Gender      Gender      `gorm:"type:enum('male','female');not null" json:"gender"`
 
-	Email string `gorm:"not null;uniqueIndex" json:"email"`
-	Name  string `gorm:"not null" json:"name"`
-	Phone string `gorm:"not null" json:"phone"`
+	Email    string `gorm:"not null;uniqueIndex" json:"email"`
+	FullName string `gorm:"not null" json:"full_name"`
+	Phone    string `gorm:"not null" json:"phone"`
 
 	PlaceOfBirth string    `gorm:"not null" json:"place_of_birth"`
 	DateOfBirth  time.Time `gorm:"not null" json:"date_of_birth"`
