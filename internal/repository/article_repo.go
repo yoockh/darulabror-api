@@ -2,17 +2,18 @@ package repository
 
 import (
 	"darulabror/internal/models"
+	"darulabror/internal/utils"
 
-	"gorm.io/datatypes"
 	"gorm.io/gorm"
 )
 
 type ArticleRepo interface {
-	CreateArticle(title string, content datatypes.JSON, author string) error
-	GetAllArticles() (interface{}, error)
-	GetArticleByID(id uint) (interface{}, error)
-	UpdateArticle(id uint, title string, content datatypes.JSON, status string) error
-	DeleteArticle(id uint) error
+	Create(article models.Article) error
+	GetAll(page, limit int) ([]models.Article, int64, error)
+	GetPublished(page, limit int) ([]models.Article, int64, error)
+	GetByID(id uint) (models.Article, error)
+	Update(article models.Article) error
+	Delete(id uint) error
 }
 
 type articleRepo struct {
@@ -23,71 +24,54 @@ func NewArticleRepo(db *gorm.DB) ArticleRepo {
 	return &articleRepo{db: db}
 }
 
-func (a *articleRepo) CreateArticle(title string, content datatypes.JSON, author string) error {
-	article := models.Article{
-		Title:   title,
-		Content: content,
-		Author:  author,
-	}
-
-	err := a.db.Create(&article).Error
-	if err != nil {
-		return err
-	}
-
-	return nil
+func (a *articleRepo) Create(article models.Article) error {
+	return a.db.Create(&article).Error
 }
 
-func (a *articleRepo) GetAllArticles() (interface{}, error) {
-	var articles []models.Article
-	err := a.db.Find(&articles).Error
-	if err != nil {
-		return nil, err
+func (a *articleRepo) GetAll(page, limit int) ([]models.Article, int64, error) {
+	var (
+		articles []models.Article
+		total    int64
+	)
+
+	_, limit, offset := utils.NormalizePageLimit(page, limit)
+
+	if err := a.db.Model(&models.Article{}).Count(&total).Error; err != nil {
+		return nil, 0, err
 	}
 
-	return articles, nil
+	err := a.db.Order("id DESC").Limit(limit).Offset(offset).Find(&articles).Error
+	return articles, total, err
 }
 
-func (a *articleRepo) GetArticleByID(id uint) (interface{}, error) {
+func (a *articleRepo) GetPublished(page, limit int) ([]models.Article, int64, error) {
+	var (
+		articles []models.Article
+		total    int64
+	)
+
+	_, limit, offset := utils.NormalizePageLimit(page, limit)
+
+	q := a.db.Model(&models.Article{}).Where("status = ?", "published")
+
+	if err := q.Count(&total).Error; err != nil {
+		return nil, 0, err
+	}
+
+	err := q.Order("id DESC").Limit(limit).Offset(offset).Find(&articles).Error
+	return articles, total, err
+}
+
+func (a *articleRepo) GetByID(id uint) (models.Article, error) {
 	var article models.Article
 	err := a.db.First(&article, id).Error
-	if err != nil {
-		return nil, err
-	}
-
-	return article, nil
+	return article, err
 }
 
-func (a *articleRepo) UpdateArticle(id uint, title string, content datatypes.JSON, status string) error {
-	var article models.Article
-	err := a.db.First(&article, id).Error
-	if err != nil {
-		return err
-	}
-
-	article.Title = title
-	article.Content = content
-	article.Status = status
-
-	err = a.db.Save(&article).Error
-	if err != nil {
-		return err
-	}
-
-	return nil
+func (a *articleRepo) Update(article models.Article) error {
+	return a.db.Save(&article).Error
 }
 
-func (a *articleRepo) DeleteArticle(id uint) error {
-	var article models.Article
-	err := a.db.First(&article, id).Error
-	if err != nil {
-		return err
-	}
-
-	err = a.db.Delete(&article).Error
-	if err != nil {
-		return err
-	}
-
-	return nil
+func (a *articleRepo) Delete(id uint) error {
+	return a.db.Delete(&models.Article{}, id).Error
 }

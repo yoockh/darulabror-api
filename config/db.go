@@ -1,7 +1,6 @@
 package config
 
 import (
-	"fmt"
 	"log"
 	"os"
 
@@ -11,21 +10,23 @@ import (
 )
 
 func ConnectionDb() *gorm.DB {
-	if err := godotenv.Load(); err != nil {
-		log.Printf("error load env %s", err)
-	}
+	_ = godotenv.Load()
 
 	dsn := os.Getenv("DATABASE_URL")
+	if dsn == "" {
+		log.Fatal("DATABASE_URL is required")
+	}
+
 	db, err := gorm.Open(postgres.New(postgres.Config{
 		DSN:                  dsn,
-		PreferSimpleProtocol: true, // Disable prepared statements completely
+		PreferSimpleProtocol: true,
 	}), &gorm.Config{
 		PrepareStmt: false,
 	})
 	if err != nil {
-		log.Printf("error connect to database %s", err)
+		log.Fatalf("failed to connect database: %v", err)
 	}
 
-	fmt.Println("success connect to db")
+	log.Println("database connected")
 	return db
 }

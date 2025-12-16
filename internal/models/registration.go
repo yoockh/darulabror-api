@@ -19,8 +19,8 @@ const (
 type Registration struct {
 	ID uint `gorm:"primaryKey" json:"id"`
 
-	StudentType StudentType `gorm:"type:enum('new','transfer');not null" json:"student_type"`
-	Gender      Gender      `gorm:"type:enum('male','female');not null" json:"gender"`
+	StudentType StudentType `gorm:"type:text;check:student_type IN ('new','transfer');not null" json:"student_type"`
+	Gender      Gender      `gorm:"type:text;check:gender IN ('male','female');not null" json:"gender"`
 
 	Email    string `gorm:"not null;uniqueIndex" json:"email"`
 	FullName string `gorm:"not null" json:"full_name"`

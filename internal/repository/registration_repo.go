@@ -2,6 +2,7 @@ package repository
 
 import (
 	"darulabror/internal/models"
+	"darulabror/internal/utils"
 	"errors"
 
 	"gorm.io/gorm"
@@ -11,7 +12,7 @@ type RegistrationRepo interface {
 	// Public Registration Management
 	Create(reg models.Registration) error
 	// Admin Registration Management
-	GetAll() ([]models.Registration, error)
+	GetAll(page, limit int) ([]models.Registration, int64, error)
 	GetByID(id uint) (models.Registration, error)
 	GetByEmail(email string) (models.Registration, error)
 	GetByNISN(nisn string) (models.Registration, error)
@@ -35,10 +36,20 @@ func (r *registrationRepo) Create(reg models.Registration) error {
 	return r.db.Create(&reg).Error
 }
 
-func (r *registrationRepo) GetAll() ([]models.Registration, error) {
-	var regs []models.Registration
-	err := r.db.Order("id DESC").Find(&regs).Error
-	return regs, err
+func (r *registrationRepo) GetAll(page, limit int) ([]models.Registration, int64, error) {
+	var (
+		regs  []models.Registration
+		total int64
+	)
+
+	_, limit, offset := utils.NormalizePageLimit(page, limit)
+
+	if err := r.db.Model(&models.Registration{}).Count(&total).Error; err != nil {
+		return nil, 0, err
+	}
+
+	err := r.db.Order("id DESC").Limit(limit).Offset(offset).Find(&regs).Error
+	return regs, total, err
 }
 
 func (r *registrationRepo) GetByID(id uint) (models.Registration, error) {
