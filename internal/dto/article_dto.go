@@ -9,7 +9,7 @@ import (
 type ArticleDTO struct {
 	ID          uint           `json:"id" validate:"omitempty"`
 	Title       string         `json:"title" validate:"required,min=3,max=100"`
-	PhotoHeader string         `json:"photo_header" validate:"omitempty,max=2000"`
+	PhotoHeader string         `json:"photo_header" validate:"required,max=2000"`
 	Content     datatypes.JSON `json:"content" validate:"required"`
 	Author      string         `json:"author" validate:"required,min=3,max=50"`
 	Status      string         `json:"status" validate:"omitempty,oneof=draft published"`

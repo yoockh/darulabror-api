@@ -9,7 +9,7 @@ type AdminDTO struct {
 	Password string      `json:"password" validate:"omitempty,min=6,max=50"`
 	Role     models.Role `json:"role" validate:"required,oneof=admin superadmin"`
 
-	IsActive  *bool `json:"is_active" validate:"required"`
+	IsActive  *bool `json:"is_active" validate:"omitempty"`
 	CreatedAt int64 `json:"created_at,omitempty"`
 	UpdatedAt int64 `json:"updated_at,omitempty"`
 }
