@@ -168,8 +168,13 @@ func main() {
 	routes.Register(e, h)
 
 	// ======================
-	// Health check (quick sanity check on Cloud Run)
+	// Health check (Cloud Run)
 	// ======================
+	e.GET("/healthz", func(c echo.Context) error {
+		return c.String(200, "ok")
+	})
+
+	// Existing root
 	e.GET("/", func(c echo.Context) error {
 		return c.String(200, "Darul Abror API")
 	})
