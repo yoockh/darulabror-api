@@ -36,9 +36,34 @@ func main() {
 	e := echo.New()
 	e.HideBanner = true
 
-	// Request logging (covers endpoints that return c.NoContent too)
 	e.Use(echomw.RequestID())
 	e.Use(echomw.Recover())
+
+	// CORS (frontend origins)
+	corsOrigins := os.Getenv("CORS_ORIGINS")
+	if corsOrigins == "" {
+		corsOrigins = "http://localhost:3000,http://localhost:5173"
+	}
+	e.Use(echomw.CORSWithConfig(echomw.CORSConfig{
+		AllowOrigins: strings.Split(corsOrigins, ","),
+		AllowMethods: []string{
+			echo.GET,
+			echo.POST,
+			echo.PUT,
+			echo.DELETE,
+			echo.OPTIONS,
+		},
+		AllowHeaders: []string{
+			echo.HeaderOrigin,
+			echo.HeaderContentType,
+			echo.HeaderAccept,
+			echo.HeaderAuthorization,
+		},
+		// Set true if cookies needed
+		AllowCredentials: false,
+	}))
+
+	// Request logging (covers endpoints that return c.NoContent too)
 	e.Use(echomw.Logger())
 
 	// Validator for c.Validate(...)
@@ -118,4 +143,5 @@ func main() {
 	if err := e.Start(":" + port); err != nil {
 		log.Fatalf("failed to start server: %v", err)
 	}
+	_ = ctx
 }
