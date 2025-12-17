@@ -66,6 +66,62 @@ Response uses:
 
 ---
 
+## Articles: `content` is flexible JSON (frontend-defined)
+
+In the database/model, `Article.content` is stored as **JSONB** (`gorm.io/datatypes.JSON`).
+That means the backend does **not** enforce a fixed schema for article body content.
+
+**Frontend decides the shape**, e.g. a block editor style:
+```json
+{
+  "blocks": [
+    { "type": "heading", "level": 2, "text": "Judul" },
+    { "type": "paragraph", "text": "Teks panjang..." },
+    { "type": "image", "url": "https://storage.googleapis.com/<bucket>/articles/xxx.jpg", "caption": "..." },
+    { "type": "video", "url": "https://storage.googleapis.com/<bucket>/articles/yyy.mp4" }
+  ]
+}
+```
+
+Important:
+- File binary (image/video) **is not stored inside `content`**.
+- Store only **URLs** (or object names) returned by the media upload endpoint.
+
+### `photo_header`
+`photo_header` is intended for the article card/cover image (thumbnail/banner). It should be a URL string.
+
+---
+
+## Media Upload (images/videos)
+
+### POST /admin/articles/media (Admin)
+Uploads a file to storage and returns a URL (public bucket) that you can put into:
+- `photo_header`
+- `content` JSON (e.g., image/video blocks)
+
+Swagger: see `Articles (Admin) -> POST /admin/articles/media`
+
+Request:
+- `multipart/form-data`
+- field name: `file`
+
+Response `201` (example):
+```json
+{
+  "status": "success",
+  "message": "media uploaded",
+  "data": {
+    "url": "https://storage.googleapis.com/<bucket>/articles/12345_file.jpg"
+  }
+}
+```
+
+Requirements:
+- Set `PUBLIC_BUCKET` env var in the server runtime to enable GCS uploads.
+- If `PUBLIC_BUCKET` is empty / GCS not configured, upload will fail.
+
+---
+
 ## Health & Swagger
 
 ### GET /healthz
@@ -94,6 +150,7 @@ Response `200`:
       {
         "id": 1,
         "title": "Example",
+        "photo_header": "https://storage.googleapis.com/<bucket>/articles/header.jpg",
         "content": {},
         "author": "Admin",
         "status": "published",
@@ -182,6 +239,7 @@ Response `200`:
 - `POST   /admin/articles` (create)
 - `PUT    /admin/articles/:id` (update)
 - `DELETE /admin/articles/:id` (delete)
+- `POST   /admin/articles/media` (upload image/video for `photo_header` or `content`)
 
 Create/Update request body: `dto.ArticleDTO` (see `internal/dto/article_dto.go`)
 
