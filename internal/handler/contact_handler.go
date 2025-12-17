@@ -18,7 +18,17 @@ func NewContactHandler(svc service.ContactService) *ContactHandler {
 	return &ContactHandler{svc: svc}
 }
 
-// PUBLIC: POST /contacts
+// Create godoc
+// @Summary Create contact message
+// @Tags Contacts (Public)
+// @Accept json
+// @Produce json
+// @Param request body ContactCreateRequest true "Contact payload"
+// @Success 201 {string} string "Created"
+// @Failure 400 {object} ErrorResponse
+// @Failure 422 {object} ErrorResponse
+// @Failure 500 {object} ErrorResponse
+// @Router /contacts [post]
 func (h *ContactHandler) Create(c echo.Context) error {
 	type req struct {
 		Email   string `json:"email" validate:"required,email"`
@@ -43,6 +53,18 @@ func (h *ContactHandler) Create(c echo.Context) error {
 }
 
 // ADMIN: GET /admin/contacts
+// AdminList godoc
+// @Summary Admin list contacts
+// @Tags Contacts (Admin)
+// @Security BearerAuth
+// @Produce json
+// @Param page query int false "Page number" default(1)
+// @Param limit query int false "Page size" default(10)
+// @Success 200 {object} ContactListResponse
+// @Failure 401 {object} ErrorResponse
+// @Failure 403 {object} ErrorResponse
+// @Failure 500 {object} ErrorResponse
+// @Router /admin/contacts [get]
 func (h *ContactHandler) AdminList(c echo.Context) error {
 	page, limit := utils.ParsePagination(c)
 	items, total, err := h.svc.GetAllContacts(page, limit)
@@ -62,6 +84,18 @@ func (h *ContactHandler) AdminList(c echo.Context) error {
 }
 
 // ADMIN: GET /admin/contacts/:id
+// AdminGetByID godoc
+// @Summary Admin get contact by ID
+// @Tags Contacts (Admin)
+// @Security BearerAuth
+// @Produce json
+// @Param id path int true "Contact ID" minimum(1)
+// @Success 200 {object} SuccessResponse[models.Contact]
+// @Failure 400 {object} ErrorResponse
+// @Failure 401 {object} ErrorResponse
+// @Failure 403 {object} ErrorResponse
+// @Failure 404 {object} ErrorResponse
+// @Router /admin/contacts/{id} [get]
 func (h *ContactHandler) AdminGetByID(c echo.Context) error {
 	id64, err := strconv.ParseUint(c.Param("id"), 10, 64)
 	if err != nil {
@@ -76,6 +110,21 @@ func (h *ContactHandler) AdminGetByID(c echo.Context) error {
 }
 
 // ADMIN: PUT /admin/contacts/:id
+// AdminUpdate godoc
+// @Summary Admin update contact
+// @Tags Contacts (Admin)
+// @Security BearerAuth
+// @Accept json
+// @Produce json
+// @Param id path int true "Contact ID" minimum(1)
+// @Param request body ContactUpdateRequest true "Contact payload"
+// @Success 200 {string} string "OK"
+// @Failure 400 {object} ErrorResponse
+// @Failure 401 {object} ErrorResponse
+// @Failure 403 {object} ErrorResponse
+// @Failure 422 {object} ErrorResponse
+// @Failure 500 {object} ErrorResponse
+// @Router /admin/contacts/{id} [put]
 func (h *ContactHandler) AdminUpdate(c echo.Context) error {
 	id64, err := strconv.ParseUint(c.Param("id"), 10, 64)
 	if err != nil {
@@ -103,6 +152,18 @@ func (h *ContactHandler) AdminUpdate(c echo.Context) error {
 }
 
 // ADMIN: DELETE /admin/contacts/:id
+// AdminDelete godoc
+// @Summary Admin delete contact
+// @Tags Contacts (Admin)
+// @Security BearerAuth
+// @Produce json
+// @Param id path int true "Contact ID" minimum(1)
+// @Success 204 {string} string "No Content"
+// @Failure 400 {object} ErrorResponse
+// @Failure 401 {object} ErrorResponse
+// @Failure 403 {object} ErrorResponse
+// @Failure 500 {object} ErrorResponse
+// @Router /admin/contacts/{id} [delete]
 func (h *ContactHandler) AdminDelete(c echo.Context) error {
 	id64, err := strconv.ParseUint(c.Param("id"), 10, 64)
 	if err != nil {

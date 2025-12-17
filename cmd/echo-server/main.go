@@ -1,5 +1,16 @@
 package main
 
+// @title Darul Abror API
+// @version 1.0
+// @description Darul Abror backend API (public + admin).
+// @BasePath /
+// @schemes https http
+//
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
+// @description Type "Bearer <token>"
+
 import (
 	"context"
 	"darulabror/api/routes"

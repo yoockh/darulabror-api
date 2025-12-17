@@ -20,6 +20,16 @@ func NewArticleHandler(svc service.ArticleService) *ArticleHandler {
 }
 
 // PUBLIC: GET /articles
+// ListPublished godoc
+// @Summary List published articles
+// @Description Returns only articles with status "published".
+// @Tags Articles (Public)
+// @Produce json
+// @Param page query int false "Page number" default(1)
+// @Param limit query int false "Page size" default(10)
+// @Success 200 {object} ArticleListResponse
+// @Failure 500 {object} ErrorResponse
+// @Router /articles [get]
 func (h *ArticleHandler) ListPublished(c echo.Context) error {
 	page, limit := utils.ParsePagination(c)
 	items, total, err := h.svc.GetPublishedArticles(page, limit)
@@ -39,6 +49,15 @@ func (h *ArticleHandler) ListPublished(c echo.Context) error {
 }
 
 // PUBLIC: GET /articles/:id
+// GetPublishedByID godoc
+// @Summary Get published article by ID
+// @Tags Articles (Public)
+// @Produce json
+// @Param id path int true "Article ID" minimum(1)
+// @Success 200 {object} SuccessResponse[dto.ArticleDTO]
+// @Failure 400 {object} ErrorResponse
+// @Failure 404 {object} ErrorResponse
+// @Router /articles/{id} [get]
 func (h *ArticleHandler) GetPublishedByID(c echo.Context) error {
 	id64, err := strconv.ParseUint(c.Param("id"), 10, 64)
 	if err != nil {
@@ -54,6 +73,19 @@ func (h *ArticleHandler) GetPublishedByID(c echo.Context) error {
 }
 
 // ADMIN: GET /admin/articles
+// AdminListAll godoc
+// @Summary Admin list all articles
+// @Description Returns draft + published.
+// @Tags Articles (Admin)
+// @Security BearerAuth
+// @Produce json
+// @Param page query int false "Page number" default(1)
+// @Param limit query int false "Page size" default(10)
+// @Success 200 {object} ArticleListResponse
+// @Failure 401 {object} ErrorResponse
+// @Failure 403 {object} ErrorResponse
+// @Failure 500 {object} ErrorResponse
+// @Router /admin/articles [get]
 func (h *ArticleHandler) AdminListAll(c echo.Context) error {
 	page, limit := utils.ParsePagination(c)
 	items, total, err := h.svc.GetAllArticles(page, limit)
@@ -73,6 +105,20 @@ func (h *ArticleHandler) AdminListAll(c echo.Context) error {
 }
 
 // ADMIN: POST /admin/articles
+// AdminCreate godoc
+// @Summary Admin create article
+// @Tags Articles (Admin)
+// @Security BearerAuth
+// @Accept json
+// @Produce json
+// @Param request body dto.ArticleDTO true "Article payload (status optional; defaults to draft)"
+// @Success 201 {string} string "Created"
+// @Failure 400 {object} ErrorResponse
+// @Failure 401 {object} ErrorResponse
+// @Failure 403 {object} ErrorResponse
+// @Failure 422 {object} ErrorResponse
+// @Failure 500 {object} ErrorResponse
+// @Router /admin/articles [post]
 func (h *ArticleHandler) AdminCreate(c echo.Context) error {
 	var body dto.ArticleDTO
 	if err := c.Bind(&body); err != nil {
@@ -89,6 +135,21 @@ func (h *ArticleHandler) AdminCreate(c echo.Context) error {
 }
 
 // ADMIN: PUT /admin/articles/:id
+// AdminUpdate godoc
+// @Summary Admin update article
+// @Tags Articles (Admin)
+// @Security BearerAuth
+// @Accept json
+// @Produce json
+// @Param id path int true "Article ID" minimum(1)
+// @Param request body dto.ArticleDTO true "Article payload (set status=published to publish)"
+// @Success 200 {string} string "OK"
+// @Failure 400 {object} ErrorResponse
+// @Failure 401 {object} ErrorResponse
+// @Failure 403 {object} ErrorResponse
+// @Failure 422 {object} ErrorResponse
+// @Failure 500 {object} ErrorResponse
+// @Router /admin/articles/{id} [put]
 func (h *ArticleHandler) AdminUpdate(c echo.Context) error {
 	id64, err := strconv.ParseUint(c.Param("id"), 10, 64)
 	if err != nil {
@@ -110,6 +171,18 @@ func (h *ArticleHandler) AdminUpdate(c echo.Context) error {
 }
 
 // ADMIN: DELETE /admin/articles/:id
+// AdminDelete godoc
+// @Summary Admin delete article
+// @Tags Articles (Admin)
+// @Security BearerAuth
+// @Produce json
+// @Param id path int true "Article ID" minimum(1)
+// @Success 204 {string} string "No Content"
+// @Failure 400 {object} ErrorResponse
+// @Failure 401 {object} ErrorResponse
+// @Failure 403 {object} ErrorResponse
+// @Failure 500 {object} ErrorResponse
+// @Router /admin/articles/{id} [delete]
 func (h *ArticleHandler) AdminDelete(c echo.Context) error {
 	id64, err := strconv.ParseUint(c.Param("id"), 10, 64)
 	if err != nil {

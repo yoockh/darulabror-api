@@ -2,7 +2,6 @@ package handler
 
 import (
 	"darulabror/internal/dto"
-	"darulabror/internal/models"
 	"darulabror/internal/service"
 	"darulabror/internal/utils"
 	"net/http"
@@ -19,7 +18,20 @@ func NewAdminHandler(svc service.AdminService) *AdminHandler {
 	return &AdminHandler{svc: svc}
 }
 
-// SUPERADMIN: POST /admin/admins
+// Create godoc
+// @Summary Superadmin create admin
+// @Tags Admins (Superadmin)
+// @Security BearerAuth
+// @Accept json
+// @Produce json
+// @Param request body dto.AdminDTO true "Admin payload (password required)"
+// @Success 201 {string} string "Created"
+// @Failure 400 {object} ErrorResponse
+// @Failure 401 {object} ErrorResponse
+// @Failure 403 {object} ErrorResponse
+// @Failure 422 {object} ErrorResponse
+// @Failure 500 {object} ErrorResponse
+// @Router /admin/admins [post]
 func (h *AdminHandler) Create(c echo.Context) error {
 	var body dto.AdminDTO
 	if err := c.Bind(&body); err != nil {
@@ -43,7 +55,18 @@ func (h *AdminHandler) Create(c echo.Context) error {
 	return c.NoContent(http.StatusCreated)
 }
 
-// SUPERADMIN: GET /admin/admins
+// List godoc
+// @Summary Superadmin list admins
+// @Tags Admins (Superadmin)
+// @Security BearerAuth
+// @Produce json
+// @Param page query int false "Page number" default(1)
+// @Param limit query int false "Page size" default(10)
+// @Success 200 {object} AdminListResponse
+// @Failure 401 {object} ErrorResponse
+// @Failure 403 {object} ErrorResponse
+// @Failure 500 {object} ErrorResponse
+// @Router /admin/admins [get]
 func (h *AdminHandler) List(c echo.Context) error {
 	page, limit := utils.ParsePagination(c)
 	items, total, err := h.svc.GetAllAdmins(page, limit)
@@ -61,7 +84,15 @@ func (h *AdminHandler) List(c echo.Context) error {
 	})
 }
 
-// ADMIN/SUPERADMIN: GET /admin/profile (contoh simpel: get by id from token)
+// Profile godoc
+// @Summary Get admin profile (from JWT)
+// @Tags Admins (Admin)
+// @Security BearerAuth
+// @Produce json
+// @Success 200 {object} SuccessResponse[dto.AdminDTO]
+// @Failure 401 {object} ErrorResponse
+// @Failure 404 {object} ErrorResponse
+// @Router /admin/profile [get]
 func (h *AdminHandler) Profile(c echo.Context) error {
 	adminID, ok := utils.GetAdminID(c)
 	if !ok {
@@ -74,7 +105,21 @@ func (h *AdminHandler) Profile(c echo.Context) error {
 	return utils.SuccessResponse(c, "profile fetched", item)
 }
 
-// SUPERADMIN: PUT /admin/admins/:id
+// Update godoc
+// @Summary Superadmin update admin
+// @Tags Admins (Superadmin)
+// @Security BearerAuth
+// @Accept json
+// @Produce json
+// @Param id path int true "Admin ID" minimum(1)
+// @Param request body dto.AdminDTO true "Admin payload (password optional)"
+// @Success 200 {string} string "OK"
+// @Failure 400 {object} ErrorResponse
+// @Failure 401 {object} ErrorResponse
+// @Failure 403 {object} ErrorResponse
+// @Failure 422 {object} ErrorResponse
+// @Failure 500 {object} ErrorResponse
+// @Router /admin/admins/{id} [put]
 func (h *AdminHandler) Update(c echo.Context) error {
 	id64, err := strconv.ParseUint(c.Param("id"), 10, 64)
 	if err != nil {
@@ -100,7 +145,18 @@ func (h *AdminHandler) Update(c echo.Context) error {
 	return c.NoContent(http.StatusOK)
 }
 
-// SUPERADMIN: DELETE /admin/admins/:id
+// Delete godoc
+// @Summary Superadmin delete admin
+// @Tags Admins (Superadmin)
+// @Security BearerAuth
+// @Produce json
+// @Param id path int true "Admin ID" minimum(1)
+// @Success 204 {string} string "No Content"
+// @Failure 400 {object} ErrorResponse
+// @Failure 401 {object} ErrorResponse
+// @Failure 403 {object} ErrorResponse
+// @Failure 500 {object} ErrorResponse
+// @Router /admin/admins/{id} [delete]
 func (h *AdminHandler) Delete(c echo.Context) error {
 	id64, err := strconv.ParseUint(c.Param("id"), 10, 64)
 	if err != nil {
@@ -117,7 +173,20 @@ func (h *AdminHandler) Delete(c echo.Context) error {
 	return c.NoContent(http.StatusNoContent)
 }
 
-// PUBLIC: POST /admin/login
+// Login godoc
+// @Summary Admin login
+// @Description Returns JWT token for accessing /admin endpoints.
+// @Tags Auth (Admin)
+// @Accept json
+// @Produce json
+// @Param request body AdminLoginRequest true "Login payload"
+// @Success 200 {object} AdminLoginResponse
+// @Failure 400 {object} ErrorResponse
+// @Failure 401 {object} ErrorResponse
+// @Failure 403 {object} ErrorResponse
+// @Failure 422 {object} ErrorResponse
+// @Failure 500 {object} ErrorResponse
+// @Router /admin/login [post]
 func (h *AdminHandler) Login(c echo.Context) error {
 	type req struct {
 		Email    string `json:"email" validate:"required,email"`
@@ -151,4 +220,16 @@ func (h *AdminHandler) Login(c echo.Context) error {
 }
 
 // (optional) helper supaya compile kalau dipakai di routes
-func allowAdminOrSuperadmin(_ models.Role) bool { return true }
+// func allowAdminOrSuperadmin(role models.Role) bool {
+// 	return role == models.Admins || role == models.Superadmin
+// }
+//
+// func (h *AdminHandler) SomeAdminEndpoint(c echo.Context) error {
+// 	role, ok := utils.GetRole(c)
+// 	if !ok || !allowAdminOrSuperadmin(role) {
+// 		return c.NoContent(http.StatusForbidden)
+// 	}
+//
+// 	// ...existing code...
+// 	return c.NoContent(http.StatusOK)
+// }
