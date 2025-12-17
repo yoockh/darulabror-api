@@ -188,11 +188,7 @@ func (h *AdminHandler) Delete(c echo.Context) error {
 // @Failure 500 {object} ErrorResponse
 // @Router /admin/login [post]
 func (h *AdminHandler) Login(c echo.Context) error {
-	type req struct {
-		Email    string `json:"email" validate:"required,email"`
-		Password string `json:"password" validate:"required,min=6,max=100"`
-	}
-	var body req
+	var body AdminLoginRequest
 
 	if err := c.Bind(&body); err != nil {
 		return utils.BadRequestResponse(c, "invalid body")

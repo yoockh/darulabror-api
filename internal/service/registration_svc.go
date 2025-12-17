@@ -35,7 +35,7 @@ func (s *registrationService) CreateRegistration(regDTO dto.RegistrationDTO) err
 		return err
 	}
 	if existsEmail {
-		return ErrInvalidAdmin // kalau mau, bikin ErrEmailAlreadyUsed khusus registration
+		return ErrRegistrationEmailExists
 	}
 
 	existsNISN, err := s.repo.ExistsByNISN(regDTO.NISN)
@@ -44,7 +44,7 @@ func (s *registrationService) CreateRegistration(regDTO dto.RegistrationDTO) err
 		return err
 	}
 	if existsNISN {
-		return ErrInvalidAdmin // kalau mau, bikin ErrNISNAlreadyUsed khusus registration
+		return ErrRegistrationNISNExists
 	}
 
 	reg, err := dto.RegistrationDTOToModel(regDTO)

@@ -3,7 +3,6 @@ package middleware
 import (
 	"darulabror/internal/models"
 	"darulabror/internal/utils"
-	"net/http"
 	"os"
 	"strings"
 
@@ -67,7 +66,7 @@ func RequireRole(allowed ...models.Role) echo.MiddlewareFunc {
 		return func(c echo.Context) error {
 			role, ok := utils.GetRole(c)
 			if !ok {
-				return c.NoContent(http.StatusUnauthorized)
+				return utils.UnauthorizedResponse(c, "unauthorized")
 			}
 			if !allowedSet[role] {
 				logrus.WithField("role", role).Warn("forbidden role")

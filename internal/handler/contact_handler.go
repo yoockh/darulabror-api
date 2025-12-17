@@ -30,12 +30,7 @@ func NewContactHandler(svc service.ContactService) *ContactHandler {
 // @Failure 500 {object} ErrorResponse
 // @Router /contacts [post]
 func (h *ContactHandler) Create(c echo.Context) error {
-	type req struct {
-		Email   string `json:"email" validate:"required,email"`
-		Subject string `json:"subject" validate:"required,min=3,max=150"`
-		Message string `json:"message" validate:"required,min=3,max=2000"`
-	}
-	var body req
+	var body ContactCreateRequest
 
 	if err := c.Bind(&body); err != nil {
 		return utils.BadRequestResponse(c, "invalid body")

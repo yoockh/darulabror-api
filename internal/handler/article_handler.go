@@ -10,6 +10,10 @@ import (
 	"strconv"
 	"time"
 
+	"errors"
+
+	"darulabror/internal/repository"
+
 	"github.com/labstack/echo/v4"
 	"github.com/sirupsen/logrus"
 )
@@ -161,8 +165,11 @@ func (h *ArticleHandler) AdminCreate(c echo.Context) error {
 
 		urlOrObject, err := h.svc.UploadArticleMedia(c.Request().Context(), src, objectName)
 		if err != nil {
+			if errors.Is(err, repository.ErrStorageNotConfigured) {
+				return utils.BadRequestResponse(c, "storage not configured: set PUBLIC_BUCKET to enable header upload")
+			}
 			logrus.WithError(err).Error("failed upload photo_header_file")
-			return utils.InternalServerErrorResponse(c, err.Error())
+			return utils.InternalServerErrorResponse(c, "failed to upload header")
 		}
 		body.PhotoHeader = urlOrObject
 	}
@@ -237,8 +244,11 @@ func (h *ArticleHandler) AdminUpdate(c echo.Context) error {
 
 		urlOrObject, err := h.svc.UploadArticleMedia(c.Request().Context(), src, objectName)
 		if err != nil {
+			if errors.Is(err, repository.ErrStorageNotConfigured) {
+				return utils.BadRequestResponse(c, "storage not configured: set PUBLIC_BUCKET to enable header upload")
+			}
 			logrus.WithError(err).Error("failed upload photo_header_file")
-			return utils.InternalServerErrorResponse(c, err.Error())
+			return utils.InternalServerErrorResponse(c, "failed to upload header")
 		}
 		body.PhotoHeader = urlOrObject
 	}

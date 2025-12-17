@@ -56,6 +56,9 @@ func main() {
 	e.Use(echomw.RequestID())
 	e.Use(echomw.Recover())
 
+	// Limit request body (protect from huge uploads)
+	e.Use(echomw.BodyLimit("20M"))
+
 	// CORS (frontend origins) - REQUIRED for production
 	corsOrigins := strings.TrimSpace(os.Getenv("CORS_ORIGINS"))
 	if corsOrigins == "" {

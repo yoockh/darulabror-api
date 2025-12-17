@@ -16,4 +16,7 @@ var (
 	// Registration service errors admin
 	ErrInvalidCredentials = errors.New("invalid credentials")
 	ErrAdminInactive      = errors.New("admin is inactive")
+	// Registration service errors additional
+	ErrRegistrationEmailExists = errors.New("registration email already used")
+	ErrRegistrationNISNExists  = errors.New("registration nisn already used")
 )
