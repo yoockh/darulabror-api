@@ -41,6 +41,9 @@ func (cv *CustomValidator) Validate(i interface{}) error {
 }
 
 func main() {
+	// Force logs to stdout (Cloud Run captures this)
+	log.SetOutput(os.Stdout)
+
 	ctx := context.Background()
 
 	// ======================
@@ -48,6 +51,7 @@ func main() {
 	// ======================
 	e := echo.New()
 	e.HideBanner = true
+	e.Logger.SetOutput(os.Stdout)
 
 	e.Use(echomw.RequestID())
 	e.Use(echomw.Recover())
@@ -166,8 +170,8 @@ func main() {
 	// ======================
 	// Health check (quick sanity check on Cloud Run)
 	// ======================
-	e.GET("/healthz", func(c echo.Context) error {
-		return c.String(200, "ok")
+	e.GET("/", func(c echo.Context) error {
+		return c.String(200, "Darul Abror API")
 	})
 
 	// Swagger UI
