@@ -173,6 +173,9 @@ func main() {
 	e.GET("/healthz", func(c echo.Context) error {
 		return c.String(200, "ok")
 	})
+	e.HEAD("/healthz", func(c echo.Context) error {
+		return c.NoContent(200)
+	})
 
 	// Existing root
 	e.GET("/", func(c echo.Context) error {
