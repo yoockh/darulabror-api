@@ -1,1 +1,6 @@
 .env
+echo-server
+*.exe
+*.dll
+*.so
+*.dylib
