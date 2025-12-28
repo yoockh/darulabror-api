@@ -41,7 +41,7 @@ func (h *RegistrationHandler) Create(c echo.Context) error {
 
 	if err := h.svc.CreateRegistration(body); err != nil {
 		logrus.WithError(err).Error("failed create registration")
-		return utils.InternalServerErrorResponse(c, err.Error())
+		return utils.InternalServerErrorResponse(c, "failed to process registration")
 	}
 
 	return c.NoContent(http.StatusCreated)
@@ -99,7 +99,8 @@ func (h *RegistrationHandler) AdminGetByID(c echo.Context) error {
 
 	item, err := h.svc.GetRegistrationByID(uint(id64))
 	if err != nil {
-		return utils.NotFoundResponse(c, err.Error())
+		logrus.WithError(err).Error("failed get registration by id")
+		return utils.NotFoundResponse(c, "registration not found")
 	}
 	return utils.SuccessResponse(c, "registration fetched", item)
 }
@@ -124,7 +125,8 @@ func (h *RegistrationHandler) AdminDelete(c echo.Context) error {
 	}
 
 	if err := h.svc.DeleteRegistration(uint(id64)); err != nil {
-		return utils.InternalServerErrorResponse(c, err.Error())
+		logrus.WithError(err).Error("failed delete registration")
+		return utils.InternalServerErrorResponse(c, "failed to delete registration")
 	}
 	return c.NoContent(http.StatusNoContent)
 }
