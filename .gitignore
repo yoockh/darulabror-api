@@ -1,5 +1,5 @@
 .env
-echo-server
+/echo-server
 *.exe
 *.dll
 *.so

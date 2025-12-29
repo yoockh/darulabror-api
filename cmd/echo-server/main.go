@@ -40,6 +40,39 @@ func (cv *CustomValidator) Validate(i interface{}) error {
 	return cv.v.Struct(i)
 }
 
+// parseCORSOrigins parses comma-separated CORS origins, trimming whitespace and removing empty entries.
+func parseCORSOrigins(corsOrigins string) []string {
+	originsRaw := strings.Split(corsOrigins, ",")
+	allowOrigins := make([]string, 0, len(originsRaw))
+	for _, o := range originsRaw {
+		o = strings.TrimSpace(o)
+		if o != "" {
+			allowOrigins = append(allowOrigins, o)
+		}
+	}
+	return allowOrigins
+}
+
+// appendUniqueOrigins appends new origins to the existing list, avoiding duplicates.
+func appendUniqueOrigins(existing, newOrigins []string) []string {
+	// Create a map of existing origins for quick lookup
+	originSet := make(map[string]bool)
+	for _, o := range existing {
+		originSet[o] = true
+	}
+
+	// Append only unique origins
+	result := make([]string, len(existing))
+	copy(result, existing)
+	for _, o := range newOrigins {
+		if !originSet[o] {
+			result = append(result, o)
+			originSet[o] = true
+		}
+	}
+	return result
+}
+
 func main() {
 	// Force logs to stdout (Cloud Run captures this)
 	log.SetOutput(os.Stdout)
@@ -65,16 +98,17 @@ func main() {
 		log.Fatal("CORS_ORIGINS is required (comma-separated), e.g. https://www.darulabror.com,https://admin.darulabror.com")
 	}
 
-	originsRaw := strings.Split(corsOrigins, ",")
-	allowOrigins := make([]string, 0, len(originsRaw))
-	for _, o := range originsRaw {
-		o = strings.TrimSpace(o)
-		if o != "" {
-			allowOrigins = append(allowOrigins, o)
-		}
-	}
+	allowOrigins := parseCORSOrigins(corsOrigins)
 	if len(allowOrigins) == 0 {
 		log.Fatal("CORS_ORIGINS is invalid (no usable origins after parsing)")
+	}
+
+	// Add localhost origins for development if enabled
+	allowLocalhost := strings.ToLower(strings.TrimSpace(os.Getenv("ALLOW_LOCALHOST_CORS"))) == "true"
+	if allowLocalhost {
+		localhostOrigins := []string{"http://localhost:3000", "http://127.0.0.1:3000"}
+		allowOrigins = appendUniqueOrigins(allowOrigins, localhostOrigins)
+		log.Printf("ALLOW_LOCALHOST_CORS=true: added localhost origins for development")
 	}
 
 	e.Use(echomw.CORSWithConfig(echomw.CORSConfig{

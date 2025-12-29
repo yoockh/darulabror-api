@@ -73,6 +73,8 @@ Required:
 Optional:
 - `PUBLIC_BUCKET` — enables GCS uploads for article media
 - `PORT` — default `8080`
+- `ALLOW_LOCALHOST_CORS` — set to `true` to allow `http://localhost:3000` and `http://127.0.0.1:3000` for local development (default: `false`)
+
 
 ---
 
@@ -404,6 +406,29 @@ Response:
 go mod download
 go run ./cmd/echo-server
 ```
+
+### Enabling CORS for Local Frontend
+
+When developing locally with a frontend running on `http://localhost:3000`, you need to enable CORS for localhost:
+
+1. Set the required `CORS_ORIGINS` environment variable with your production origins
+2. Set `ALLOW_LOCALHOST_CORS=true` to allow localhost access
+
+Example:
+```bash
+export CORS_ORIGINS="https://www.darulabror.com,https://admin.darulabror.com"
+export ALLOW_LOCALHOST_CORS=true
+export DATABASE_URL="postgres://user:pass@localhost/darulabror"
+export JWT_SECRET="your-secret"
+go run ./cmd/echo-server
+```
+
+This will allow requests from:
+- `http://localhost:3000`
+- `http://127.0.0.1:3000`
+- All origins in `CORS_ORIGINS`
+
+**Note**: In production, never set `ALLOW_LOCALHOST_CORS=true`. The server will only accept origins explicitly listed in `CORS_ORIGINS`.
 
 Regenerate Swagger docs:
 ```bash
