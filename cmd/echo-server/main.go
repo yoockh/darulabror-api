@@ -22,6 +22,7 @@ import (
 	"log"
 	"os"
 	"reflect"
+	"strconv"
 	"strings"
 
 	"cloud.google.com/go/storage"
@@ -104,11 +105,11 @@ func main() {
 	}
 
 	// Add localhost origins for development if enabled
-	allowLocalhost := strings.ToLower(strings.TrimSpace(os.Getenv("ALLOW_LOCALHOST_CORS"))) == "true"
+	allowLocalhost, _ := strconv.ParseBool(os.Getenv("ALLOW_LOCALHOST_CORS"))
 	if allowLocalhost {
 		localhostOrigins := []string{"http://localhost:3000", "http://127.0.0.1:3000"}
 		allowOrigins = appendUniqueOrigins(allowOrigins, localhostOrigins)
-		log.Printf("ALLOW_LOCALHOST_CORS=true: added localhost origins for development")
+		log.Printf("ALLOW_LOCALHOST_CORS enabled: added localhost origins for development")
 	}
 
 	e.Use(echomw.CORSWithConfig(echomw.CORSConfig{
