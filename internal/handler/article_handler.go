@@ -384,28 +384,56 @@ func uploadOne(ctx context.Context, svc interface {
 // replace any map that contains {"upload_key": "<key>"} with {"url": "<url>"} (and removes upload_key)
 // works recursively for objects/arrays
 func injectUploadedURLs(node any, urlByKey map[string]string) any {
-	switch v := node.(type) {
-	case map[string]any:
-		if raw, ok := v["upload_key"]; ok {
-			if key, ok := raw.(string); ok {
-				if url, exists := urlByKey[key]; exists {
-					v["url"] = url
-					delete(v, "upload_key")
-				}
-			}
-		}
-		for k, child := range v {
-			v[k] = injectUploadedURLs(child, urlByKey)
-		}
-		return v
-	case []any:
-		for i := range v {
-			v[i] = injectUploadedURLs(v[i], urlByKey)
-		}
-		return v
-	default:
-		return node
-	}
+    switch v := node.(type) {
+    case map[string]any:
+        // Case 1: legacy placeholder { upload_key: "<key>" }
+        if raw, ok := v["upload_key"]; ok {
+            if key, ok := raw.(string); ok {
+                if url, exists := urlByKey[key]; exists {
+                    v["url"] = url
+                    delete(v, "upload_key")
+                }
+            }
+        }
+
+        // Case 2: EditorJS image block: {type:"image", data:{file:{fileKey, url}}}
+        if t, ok := v["type"].(string); ok && strings.EqualFold(t, "image") {
+            if data, ok := v["data"].(map[string]any); ok {
+                if file, ok := data["file"].(map[string]any); ok {
+                    // support several key names just in case
+                    var key string
+                    if k, ok := file["fileKey"].(string); ok && strings.TrimSpace(k) != "" {
+                        key = strings.TrimSpace(k)
+                    } else if k, ok := file["file_key"].(string); ok && strings.TrimSpace(k) != "" {
+                        key = strings.TrimSpace(k)
+                    }
+
+                    if key != "" {
+                        if url, exists := urlByKey[key]; exists && strings.TrimSpace(url) != "" {
+                            file["url"] = url // overwrite blob: with public https URL
+                            // optional: you may keep fileKey for future edits, or delete it:
+                            // delete(file, "fileKey")
+                        }
+                    }
+                }
+            }
+        }
+
+        // Recurse through children
+        for k, child := range v {
+            v[k] = injectUploadedURLs(child, urlByKey)
+        }
+        return v
+
+    case []any:
+        for i := range v {
+            v[i] = injectUploadedURLs(v[i], urlByKey)
+        }
+        return v
+
+    default:
+        return node
+    }
 }
 
 func (h *ArticleHandler) parseAndUploadContentFiles(c echo.Context) (map[string]string, error) {
